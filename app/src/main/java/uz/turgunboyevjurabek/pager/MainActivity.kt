@@ -2,6 +2,7 @@
 
 package uz.turgunboyevjurabek.pager
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -13,22 +14,30 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -38,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -62,36 +72,38 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@SuppressLint("AutoboxingStateCreation")
 @Composable
 fun Greeting() {
     Column(
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()) {
-        val pagerState= rememberPagerState(pageCount = { 10 })
-        val state = rememberLazyListState()
+        verticalArrangement = Arrangement.Center) {
+        val pagerState= rememberPagerState(pageCount = { 12 })
 
-        HorizontalPager(verticalAlignment = Alignment.Bottom,state = pagerState, modifier = Modifier) {page ->
+        val fling = PagerDefaults.flingBehavior(
+            state = pagerState,
+            pagerSnapDistance = PagerSnapDistance.atMost(4)
+        )
+        HorizontalPager(verticalAlignment = Alignment.Bottom,
+            state = pagerState,
+            flingBehavior = fling
+        ) {page ->
             Card(modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .size(400.dp)
-                .padding(20.dp)
-                .graphicsLayer {
-                    val pageOffset = (
-                            (pagerState.currentPage - page) + pagerState
-                                .currentPageOffsetFraction
-                            ).absoluteValue
+                .size(600.dp)
+                .padding(10.dp)
 
-                    alpha = if (state.isScrollInProgress) 0.5f else 1f
-
-                }
             ) {
                 Column {
                     val img= painterResource(id = R.drawable.img)
                     Image(painter =img , contentDescription = null,
-                        modifier = Modifier.align(Alignment.CenterHorizontally))
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .weight(9f),
+                        contentScale = ContentScale.Crop)
                     Text(
                         text = "Page: $page",
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .weight(0.5f)
                     )
                 }
             }
@@ -133,7 +145,8 @@ fun Greeting() {
         Button(
             onClick = {
             coroutineScope.launch {
-                pagerState.animateScrollToPage(5)
+                var count=pagerState.currentPage
+                pagerState.animateScrollToPage(count+1)
             }
         },
             modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -154,3 +167,4 @@ fun GreetingPreview() {
         Greeting()
     }
 }
+
